@@ -99,9 +99,9 @@ run;
 
 
 proc glm data=loghood2;
-	/*class BrkSide NAmes;*/
+	class BrkSide NAmes;
 	model logprice = logarea BrkSide NAmes logarea*BrkSide logarea*NAmes / solution;
 	means BrkSide NAmes / hovtest=0;
 	output out=glm_out p=pred r=resid student=rstudent;
-	output diagnostic=diagnostics residual=residual;
+	output out=diagnostics residual=residual;
 run;
