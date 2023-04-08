@@ -14,3 +14,8 @@ Instructions
 */Instructions/*
 desktop.ini
 ~*.tmp
+
+#office temp files
+~$*.docx
+~$*.xlsx
+~$*.pptx
