@@ -150,6 +150,21 @@ CVdat <- CVlm(data = trainNeighborhood, form.lm = formula(log(SalePrice)~log(GrL
 CVdat
 (press(priceLm))
 
+#scatterplot matrix
+pairs(train2[, c("SalePrice","GrLivArea")],
+      main= "Scatterplot Matrix of Variables in Training Set",
+      col = "blue")
+
+# List of only the numeric columns
+numeric = c("MSSubClass","LotFrontage","OverallQual","OverallCond","YearBuilt",
+            "YearRemodAdd","MasVnrArea","BsmtFinSF1", "GarageArea", "WoodDeckSF",
+            "OpenPorchSF","EnclosedPorch")
+
+# Create a scatterplot matrix of all numeric columns
+pairs(train2analysis[, numeric],
+      main = "Scatterplot Matrix of Numeric Variables in train2analysis",
+      col = "blue")
+
 
 ### Analysis 2 ####
 train2 = read.csv(file.choose(), sep = ",")
