@@ -15,6 +15,8 @@ data neighborhoods;
   where Neighborhood in ("NAmes", "Edwards", "BrkSide");
 run;
 
+
+
 /*Check for linearity and multivariate normality*/
 proc sgscatter data = neighborhoods;
 matrix SalePrice  GrLivArea / diagonal=(histogram kernel);
