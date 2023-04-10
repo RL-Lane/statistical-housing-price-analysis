@@ -45,7 +45,7 @@ ui <- fluidPage(
 server <- function(input, output) {
   
   # Define color dictionary
-  color_dict <- c("NAmes" = "red", "BrkSide" = "blue", "Edwards" = "green")
+  color_dict <- c("NAmes" = "violet", "BrkSide" = "turquoise", "Edwards" = "coral")
   
   # Filter the dataset based on the selected neighborhood class
   filtered_data <- reactive({
