@@ -8,8 +8,21 @@ PROC IMPORT OUT= WORK.house
      DATAROW=2; 
 RUN;
 
+PROC IMPORT OUT= WORK.housetest 
+            DATAFILE= "C:\Study Files\SMU MSDS\DS 6371 Statistical Foundations for Data Science\statistical-housing-price-analysis\Resources\test.csv" 
+            DBMS=CSV REPLACE;
+     GETNAMES=YES;
+     DATAROW=2; 
+RUN;
+
+data housetest;
+set housetest;
+SalePrice = .;
+logprice = .;
+;
+
 data loghouse;
-set house;
+set house housetest;
 logprice = log(SalePrice);
 logarea = log(GrLivArea);
 loglotarea = log(LotArea);
@@ -188,27 +201,27 @@ data class:
 
 proc glmselect data = logselection;
 model logprice = logarea loglotarea OverallQual OverallCond YearBuilt YearRemodAdd 
-	BsmtFinSF1 BsmtFinSF2 GrLivArea FullBath HalfBath BedroomAbvGr KitchenAbvGr 
+	BsmtFinSF1 BsmtFinSF2  FullBath HalfBath BedroomAbvGr KitchenAbvGr 
 	TotRmsAbvGrd Fireplaces GarageCars WoodDeckSF OpenPorchSF YrSold 
 	YrSold*YearBuilt logarea*loglotarea / selection = Forward(stop = CV) cvmethod=random(5) stats = adjrsq;
 run;
 
 proc glmselect data = logselection;
 model logprice = logarea loglotarea OverallQual OverallCond YearBuilt YearRemodAdd 
-	BsmtFinSF1 BsmtFinSF2 GrLivArea FullBath HalfBath BedroomAbvGr KitchenAbvGr 
+	BsmtFinSF1 BsmtFinSF2 FullBath HalfBath BedroomAbvGr KitchenAbvGr 
 	TotRmsAbvGrd Fireplaces GarageCars WoodDeckSF OpenPorchSF YrSold 
 	YrSold*YearBuilt logarea*loglotarea / selection = Backward(stop = CV) cvmethod=random(5) stats = adjrsq;
 run;
 
 proc glmselect data = logselection;
 model logprice = logarea loglotarea OverallQual OverallCond YearBuilt YearRemodAdd 
-	BsmtFinSF1 BsmtFinSF2 GrLivArea FullBath HalfBath BedroomAbvGr KitchenAbvGr 
+	BsmtFinSF1 BsmtFinSF2  FullBath HalfBath BedroomAbvGr KitchenAbvGr 
 	TotRmsAbvGrd Fireplaces GarageCars WoodDeckSF OpenPorchSF YrSold 
 	YrSold*YearBuilt logarea*loglotarea / selection = Stepwise(stop = CV) cvmethod=random(5) stats = adjrsq;
 run;
 
 proc glm data = selectionnocategories;
-	model logprice = logarea loglotarea logarea*loglotarea BedroomAbvGr	BldgType	BsmtFinSF1	BsmtFinSF2	Fireplaces	FullBath	GarageCars	GrLivArea	HalfBath	Id	KitchenAbvGr	LotArea	OpenPorchSF	OverallCond	OverallQual	SalePrice	TotRmsAbvGrd	TotalBsmtSF	WoodDeckSF	YearBuilt	YearRemodAdd	YrSold;
+	model logprice = logarea loglotarea logarea*loglotarea BedroomAbvGr	BldgType	BsmtFinSF1	BsmtFinSF2	Fireplaces	FullBath	GarageCars		HalfBath		KitchenAbvGr	LotArea	OpenPorchSF	OverallCond	OverallQual	TotRmsAbvGrd	TotalBsmtSF	WoodDeckSF	YearBuilt	YearRemodAdd	YrSold;
 run;
 
 /*Typical R2 is around 0.87*/
@@ -216,14 +229,7 @@ run;
 
 
 
-/*Attempting to convert text categories into dummy variables*/
-%let catvars = Street Alley LotShape LandContour Neighborhood HouseStyle
-                  RoofStyle RoofMatl Exterior1st Foundation BsmtQual
-                  BsmtCond Heating HeatingQC CentralAir GarageType PavedDrive;
-				  
 
-data housedummies;
-	set logselection;
 	
 
 
@@ -253,7 +259,45 @@ proc glmselect data = drop_text_cats;
 	HeatingGasW	HeatingWall	HeatingQCFa	HeatingQCTA	HeatingQCEx	HeatingQCGd	CentralAirY	
 	GarageType2Types	GarageTypeDetchd	GarageTypeAttchd	GarageTypeCarPort	
 	GarageTypeBasment	GarageTypeBuiltIn	PavedDriveP	PavedDriveY
-/ selection = Forward(stop = CV) cvmethod=random(5) stats = adjrsq;
+/ selection = Backward(stop = CV) cvmethod=random(5) stats = adjrsq;
+output out = results p = Predict;
 run;
 
+/*
+Intercept + logarea + loglotarea + OverallQual + OverallCond + YearBuilt + YearRemodAdd + BsmtFinSF1 + BsmtFinSF2 + GrLivArea + FullBath + HalfBath + BedroomAbvGr + KitchenAbvGr + TotRmsAbvGrd + Fireplaces + GarageCars + WoodDeckSF + OpenPorchSF + YrSold + logarea*loglotarea + StreetPave + LotShapeIR1 + LotShapeIR2 + LotShapeIR3 + LandContourLow + LandContourBnk + LandContourLvl + NeighborhoodBrkSide + NeighborhoodSWISU + NeighborhoodIDOTRR + NeighborhoodEdwards + NeighborhoodMeadowV + NeighborhoodSawyer + NeighborhoodOldTown + NeighborhoodCrawfor + NeighborhoodSawyerW + NeighborhoodNAmes + NeighborhoodMitchel + NeighborhoodCollgCr + NeighborhoodGilbert + NeighborhoodNPkVill + NeighborhoodBrDale + NeighborhoodClearCr + NeighborhoodNWAmes + NeighborhoodStoneBr + NeighborhoodSomerst + NeighborhoodTimber + NeighborhoodBlmngtn + NeighborhoodVeenker + NeighborhoodBlueste + NeighborhoodNridgHt + BldgType1Fam + BldgTypeTwnhs + BldgTypeTwnhsE + BldgType2fmCon + HouseStyle1Story + HouseStyleSFoyer + HouseStyle15Fin + HouseStyle15Unf + HouseStyleSLvl + HouseStyle2Story + HouseStyle25Unf + RoofStyleFlat + RoofMatlCompShg + RoofMatlClyTile + RoofMatlMetal + RoofMatlWdShngl + RoofMatlMembran + RoofMatlWdShake + Exterior1stVinylSd + Exterior1stWdSdng + Exterior1stAsbShng + Exterior1stMetalSd + Exterior1stCemntBd + Exterior1stWdShing + Exterior1stPlywood + Exterior1stHdBoard + Exterior1stStucco + Exterior1stBrkFace + Exterior1stBrkComm + Exterior1stCBlock + FoundationSlab + FoundationCBlock + FoundationBrkTil + FoundationPConc + FoundationStone + BsmtQualEx + BsmtQualTA + BsmtQualGd + BsmtQualFa + BsmtCondTa + BsmtCondGd + HeatingGasA + HeatingGrav + HeatingGasW + HeatingWall + HeatingQCFa + HeatingQCTA + HeatingQCEx + HeatingQCGd + CentralAirY + GarageType2Types + GarageTypeDetchd + GarageTypeAttchd + GarageTypeCarPort + GarageTypeBasment + PavedDriveP + PavedDriveY
 
+
+Intercept + logarea + OverallQual + OverallCond + YearBuilt + YearRemodAdd + BsmtFinSF1 + BsmtFinSF2 + KitchenAbvGr + Fireplaces + GarageCars + logarea*loglotarea + NeighborhoodIDOTRR + NeighborhoodEdwards + NeighborhoodOldTown + NeighborhoodCrawfor + NeighborhoodStoneBr + NeighborhoodSomerst + NeighborhoodNridgHt + HouseStyle2Story + RoofMatlClyTile + RoofMatlWdShngl + Exterior1stBrkFace + FoundationPConc + BsmtQualEx + HeatingGrav + HeatingQCEx
+
+*/
+
+
+/*output the model to a file*/
+data results2;
+set results;
+logprice = Predict;
+if Predict >0 then logprice = Predict;
+if Predict <= 0 then logprice = 9.21034;
+keep id SalePrice logprice;
+where id > 1460;
+
+proc print data=results2(obs=5);
+run;
+
+data results3;
+set results2;
+if exp(logprice) > 0 then SalePrice = exp(logprice);
+if exp(logprice)<= 0 then SalePrice = 10000;
+keep id SalePrice;
+where id > 1460;
+;
+
+proc print data = results3(obs=5);
+run;
+
+PROC EXPORT DATA= WORK.RESULTS3 
+            OUTFILE= "C:\Study Files\SMU MSDS\DS 6371 Statistical Foundations for Data Science\statistical-housing-price-analysis\test-model.csv" 
+            DBMS=CSV REPLACE;
+     PUTNAMES=YES;
+RUN;
+/*Success!!!*/

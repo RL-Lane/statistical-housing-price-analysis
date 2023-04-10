@@ -107,3 +107,46 @@ proc glm data=loghood2;
 	output out=glm_out p=pred r=resid student=rstudent;
 	output out=diagnostics residual=residual;
 run;
+
+
+
+
+
+
+
+
+
+/*Attempt to output any sort of model to a file*/
+data housetest;
+set housetest;
+SalePrice = .;
+;
+/*It is vital to place this column here so it can be predicted.*/
+
+data neighborhoods;
+  set house housetest;
+  where Neighborhood in ("NAmes", "Edwards", "BrkSide");
+run;
+
+proc glm data = neighborhoods;
+model log(SalePrice) = log(GrLivArea);
+output out = results p = Predict;
+run;
+
+data results2;
+set results;
+if Predict >0 then SalePrice = Predict;
+if Predict <= 0 then SalePrice = 10000;
+keep id SalePrice;
+where id > 1460;
+
+proc print data=results2(obs=5);
+run;
+
+PROC EXPORT DATA= WORK.RESULTS2 
+            OUTFILE= "C:\Study Files\SMU MSDS\DS 6371 Statistical Founda
+tions for Data Science\statistical-housing-price-analysis\test-model.csv" 
+            DBMS=CSV REPLACE;
+     PUTNAMES=YES;
+RUN;
+/*Success!!!*/
